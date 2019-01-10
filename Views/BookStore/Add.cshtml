@@ -1,0 +1,118 @@
+﻿
+<div id="authorinfo">
+    <form id="authorform" action="/BookStore/Add" method="post" data-parsley-validate class="form-horizontal form-label-left">
+        <input type="hidden" id="authorString" name="Authorstringid" />
+        <div class="form-group">
+            <label class="control-label col-md-3 col-sm-3 col-xs-12" for="book-name">
+                Book Name <span class="required">*</span>
+            </label>
+            <div class="col-md-6 col-sm-6 col-xs-12">
+                <input name="BookName" type="text" id="book-name" required="required" class="form-control col-md-7 col-xs-12">
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-md-3 col-sm-3 col-xs-12" for="isbn">
+                ISBN <span class="required">*</span>
+            </label>
+            <div class="col-md-6 col-sm-6 col-xs-12">
+                <input type="number" id="isbn" name="ISBN" required="required" class="form-control col-md-7 col-xs-12">
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-md-3 col-sm-3 col-xs-12">Category</label>
+            <div class="col-md-6 col-sm-6 col-xs-12">
+                <select name="CategoryId" class="form-control">
+                    @foreach (var category in Model.BookCategories)
+                {
+                    <option @(Model.CategoryId == category.ID ? "selected" : "") value="@category.ID">@category.CategoryName</option>
+            }
+                </select>
+            </div>
+        </div>
+            <div class="form-group">
+                <label class="control-label col-md-3 col-sm-3 col-xs-12">Author</label>
+                <div class="col-md-6 col-sm-6 col-xs-12">
+                    <template>
+                        <div>
+                            <multiselect v-model="author.selectedauthor" track-by="AuthorName" label="AuthorName"
+                                         placeholder="Type to search Author" open-direction="bottom"
+                                         :options="author.authordata" :multiple="true"
+                                         :searchable="true" :loading="author.isLoading"
+                                         :internal-search="false" :clear-on-select="true"
+                                         :close-on-select="false"
+                                         :options-limit="300" :limit="10" :limit-text="limitText"
+                                         :max-height="600" :show-no-results="true"
+                                         :hide-selected="true" @@search-change="loadauthordata">
+                                <template slot="clear" slot-scope="props">
+                                    <div class="multiselect__clear" v-if="author.authordata.length" @@mousedown.prevent.stop="clearAll(props.search)"></div>
+                                </template><span slot="noResult">No Author Found!</span>
+                            </multiselect>
+                        </div>
+                    </template>
+                </div>
+            </div>
+            <div class="ln_solid"></div>
+            <div class="form-group">
+                <div class="col-md-6 col-sm-6 col-xs-12 col-md-offset-3">
+                    <button type="submit"  @@click="InsertBook" class="btn btn-success">Submit</button>
+                </div>
+            </div>
+    </form>
+</div>
+
+@section scripts{
+    <script type="text/javascript">
+        new Vue({
+            el: "#authorinfo",
+            components: { Multiselect },
+            data: {
+                author: {
+                    selectedauthor: '',
+                    authordata: [],
+                    isLoading: false,
+                    selectedauthorString: ''
+                },
+            },
+            methods: {
+                InsertBook() {
+                    let vm = this;
+                    document.querySelector("#authorString").value = vm.convertToCommaSeparated(vm.author.selectedauthor);
+                    vm.$validator.validateAll().then(success => {
+                        if (success) {
+                            document.getElementById("authorform").submit();
+                        }
+                    })
+                },
+                convertToCommaSeparated: function (item) {
+                    var temp = "";
+                    Object.keys(item).forEach(function (key) {
+                        temp += item[key].ID + ",";
+                    });
+                    return temp;
+                },
+                loadauthordata: function (query) {
+                    var vm = this;
+                    console.log("test");
+                    axios.get('/api/general/author/search?search=' + query)
+                        .then(function (response) {
+                            console.log(response);
+                            vm.author.authordata = [];
+                            if (response.status == 200) {
+                                vm.author.authordata = response.data.BookAuthors;
+                            }
+                        })
+                        .catch(function (error) {
+                            alert(error);
+                        })
+                },
+                limitText(count) {
+                    return `and ${count} other items`
+                }
+            },
+            mounted() {
+                let vm = this;
+                //vm.loadauthordata();
+            }
+        });
+    </script>
+}

@@ -1,0 +1,50 @@
+﻿@model IEnumerable<AuthnAuthz.Model.BookModel>
+
+@{
+    ViewBag.Title = "SelectBook";
+}
+
+<h2>SelectBook</h2>
+
+<p>
+    @Html.ActionLink("Insert Book", "Add", "BookStore")
+</p>
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.BookName)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.ISBN)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Admin)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.BookCategory.CategoryName)
+        </th>
+        <th></th>
+    </tr>
+
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.BookName)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.ISBN)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Admin)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.BookCategory.CategoryName)
+        </td>
+        <td>
+            @Html.ActionLink("Edit", "Edit", "BookStore", new { id = item.Id }, new { @class = "btn btn-info" }) |
+            @Html.ActionLink("Delete", "Delete", "BookStore", new { id = item.Id }, new { @class = "btn btn-info" })
+        </td>
+    </tr>
+}
+
+</table>
